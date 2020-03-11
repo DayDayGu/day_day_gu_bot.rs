@@ -18,7 +18,8 @@ pub async fn main() -> anyhow::Result<()> {
         for commit in push.commits.into_iter() {
             msg.push(format!(
                 "{} committed {} just now.\n",
-                commit.author.name, commit.message
+                commit.author.username.unwrap_or(commit.author.name),
+                commit.message
             ));
         }
         let msg = msg.concat();
