@@ -1,0 +1,15 @@
+[package]
+name = "day_day_gu_bot"
+version = "0.1.0"
+authors = ["laxect <me@gyara.moe>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.90", features = ["derive"] }
+async-std = { version = "1.5.0", features = ["attributes"] }
+tide = "0.6.0"
+anyhow = "1.0.26"
+log = "0.4.8"
+env_logger = "0.7.1"
+surf = "1.0.3"
+once_cell = "1.3.1"
