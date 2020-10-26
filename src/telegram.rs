@@ -36,7 +36,10 @@ pub async fn send_message<'a>(text: &'a str) {
     let msg = Message::new(text);
     let uri = tg_api("sendMessage");
     task::spawn(async move {
-        if let Err(e) = surf::post(uri).body_json(&msg).unwrap().await {
+        if let Err(e) = surf::post(uri)
+            .body(surf::Body::from_json(&msg).expect("Body parser failed"))
+            .await
+        {
             log::error!("Error when send message: {}", e);
         }
     });

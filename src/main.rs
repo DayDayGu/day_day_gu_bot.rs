@@ -3,6 +3,22 @@ use std::env;
 mod github;
 mod telegram;
 
+async fn github_hook(mut req: tide::Request<()>) -> tide::Result {
+    let push: github::Push = req.body_json().await.unwrap();
+    log::trace!("Recv push: {:?}", &push);
+    let mut msg = Vec::new();
+    for commit in push.commits.into_iter() {
+        msg.push(format!(
+            "{} committed {} just now.\n",
+            commit.author.username.unwrap_or(commit.author.name),
+            commit.message
+        ));
+    }
+    let msg = msg.concat();
+    telegram::send_message(&msg).await;
+    Ok("done".into())
+}
+
 #[async_std::main]
 pub async fn main() -> anyhow::Result<()> {
     env_logger::init();
@@ -11,21 +27,7 @@ pub async fn main() -> anyhow::Result<()> {
     let bind_address = ["0.0.0.0:", &port].concat();
     log::info!("Server listen on {}", bind_address);
     let mut app = tide::new();
-    app.at("/github_hook").post(|mut req: tide::Request<()>| async move {
-        let push: github::Push = req.body_json().await.unwrap();
-        log::trace!("Recv push: {:?}", &push);
-        let mut msg = Vec::new();
-        for commit in push.commits.into_iter() {
-            msg.push(format!(
-                "{} committed {} just now.\n",
-                commit.author.username.unwrap_or(commit.author.name),
-                commit.message
-            ));
-        }
-        let msg = msg.concat();
-        telegram::send_message(&msg).await;
-        "done"
-    });
+    app.at("/github_hook").post(github_hook);
     app.listen(bind_address).await?;
     Ok(())
 }
